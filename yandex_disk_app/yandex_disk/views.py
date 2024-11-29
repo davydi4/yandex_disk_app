@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, FileResponse
-import requests
 from .forms import PublicLinkForm
 from typing import List, Dict
+from django.core.cache import cache
 import zipfile
 import io
+import requests
 
 
 API_BASE_URL = "https://cloud-api.yandex.net/v1/disk/public/resources"
@@ -38,22 +39,32 @@ def filter_files(files: List[Dict], file_type: str) -> List[Dict]:
 
 
 def file_list(request):
-    """Отображение списка файлов по публичной ссылке."""
+    """Отображение списка файлов с фильтрацией и кэшированием."""
     public_link = request.GET.get('public_link')
     file_type = request.GET.get('type')  # Получаем тип файла из параметров запроса
     if not public_link:
         return redirect('index')
 
-    params = {'public_key': public_link}
-    response = requests.get(API_BASE_URL, params=params)
+    # Попытка получить список файлов из кэша
+    cache_key = f"file_list:{public_link}"
+    files = cache.get(cache_key)
 
-    if response.status_code == 200:
-        files = response.json()['_embedded']['items']
-        if file_type:
-            files = filter_files(files, file_type)  # Применяем фильтр
-        return render(request, 'disk/files.html', {'files': files, 'public_link': public_link})
-    else:
-        return render(request, 'disk/files.html', {'error': 'Не удалось получить список файлов.'})
+    if not files:
+        # Если файлов в кэше нет, запрос к API
+        params = {'public_key': public_link}
+        response = requests.get(API_BASE_URL, params=params)
+        if response.status_code == 200:
+            files = response.json()['_embedded']['items']
+            # Сохранение списка файлов в кэш
+            cache.set(cache_key, files, timeout=300)  # Кэширование на 5 минут
+        else:
+            return render(request, 'disk/files.html', {'error': 'Не удалось получить список файлов.'})
+
+    # Фильтрация файлов по типу, если указано
+    if file_type:
+        files = filter_files(files, file_type)
+
+    return render(request, 'disk/files.html', {'files': files, 'public_link': public_link})
 
 
 def download_file(request, file_path):
