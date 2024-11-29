@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Список файлов</title>
+</head>
+<body>
+    <h1>Список файлов</h1>
+    {% if error %}
+        <p>{{ error }}</p>
+    {% else %}
+        <ul>
+        {% for file in files %}
+            <li>
+                {{ file.name }}
+                {% if file.type == 'file' %}
+                    <a href="{% url 'download_file' file.path %}?public_link={{ public_link }}">Скачать</a>
+                {% endif %}
+            </li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>
