@@ -3,6 +3,8 @@ from django.http import HttpResponse, FileResponse
 import requests
 from .forms import PublicLinkForm
 from typing import List, Dict
+import zipfile
+import io
 
 
 API_BASE_URL = "https://cloud-api.yandex.net/v1/disk/public/resources"
@@ -20,7 +22,7 @@ def index(request):
     return render(request, 'disk/index.html', {'form': form})
 
 
-def filter_files(files: List[Dict], file_type:str) -> List[Dict]:
+def filter_files(files: List[Dict], file_type: str) -> List[Dict]:
     """Фильтрация файлов по типу"""
     if file_type == "documents":
         # MIME-типы для документов
@@ -70,3 +72,36 @@ def download_file(request, file_path):
         return response
     else:
         return HttpResponse('Ошибка загрузки файла.', status=400)
+
+
+def download_multiple_files(request):
+    """Скачивание нескольких файлов архивом."""
+    if request.method == 'POST':
+        public_link = request.POST.get('public_link')
+        selected_files = request.POST.getlist('files')
+
+        if not selected_files:
+            return HttpResponse("Не выбрано ни одного файла", status=400)
+
+        # Создание архива
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w') as zf:
+            for file_path in selected_files:
+                # Получение ссылки на файл
+                download_url = f"{API_BASE_URL}/download"
+                params = {'public_key': public_link, 'path': file_path}
+                response = requests.get(download_url, params=params)
+                if response.status_code == 200:
+                    file_download_link = response.json()['href']
+                    file_response = requests.get(file_download_link, stream=True)
+
+                    # Добавление файла в архив
+                    file_name = file_path.split('/')[-1]
+                    zf.writestr(file_name, file_response.content)
+
+        zip_buffer.seek(0)
+        response = FileResponse(zip_buffer, content_type='application/zip')
+        response['Content-Disposition'] = 'attachment; filename="files.zip"'
+        return response
+
+    return HttpResponse("Метод не поддерживается", status=405)

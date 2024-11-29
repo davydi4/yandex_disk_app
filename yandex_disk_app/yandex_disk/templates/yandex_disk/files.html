@@ -11,16 +11,21 @@
     {% if error %}
         <p>{{ error }}</p>
     {% else %}
-        <ul>
-        {% for file in files %}
-            <li>
-                {{ file.name }}
-                {% if file.type == 'file' %}
-                    <a href="{% url 'download_file' file.path %}?public_link={{ public_link }}">Скачать</a>
-                {% endif %}
-            </li>
-        {% endfor %}
-        </ul>
+        <form method="post" action="{% url 'download_multiple_files' %}">
+            {% csrf_token %}
+            <input type="hidden" name="public_link" value="{{ public_link }}">
+            <ul>
+            {% for file in files %}
+                <li>
+                    {% if file.type == 'file' %}
+                        <input type="checkbox" name="files" value="{{ file.path }}">
+                    {% endif %}
+                    {{ file.name }}
+                </li>
+            {% endfor %}
+            </ul>
+            <button type="submit">Скачать выбранные файлы</button>
+        </form>
     {% endif %}
 </body>
 </html>
