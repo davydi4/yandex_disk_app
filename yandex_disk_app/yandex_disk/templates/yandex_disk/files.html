@@ -5,6 +5,9 @@
 </head>
 <body>
     <h1>Список файлов</h1>
+    <a href="?public_link={{ public_link }}&type=documents">Только документы</a> |
+    <a href="?public_link={{ public_link }}&type=images">Только изображения</a> |
+    <a href="?public_link={{ public_link }}">Все файлы</a>
     {% if error %}
         <p>{{ error }}</p>
     {% else %}
