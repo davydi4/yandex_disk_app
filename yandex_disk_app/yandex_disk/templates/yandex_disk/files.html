@@ -1,31 +1,29 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Список файлов</title>
-</head>
-<body>
-    <h1>Список файлов</h1>
-    <a href="?public_link={{ public_link }}&type=documents">Только документы</a> |
-    <a href="?public_link={{ public_link }}&type=images">Только изображения</a> |
-    <a href="?public_link={{ public_link }}">Все файлы</a>
+{% extends "yandex_disk/base.html" %}
+
+{% block title %}Список файлов{% endblock %}
+
+{% block content %}
+    <h2>Список файлов</h2>
     {% if error %}
-        <p>{{ error }}</p>
+        <p style="color: red;">{{ error }}</p>
     {% else %}
-        <form method="post" action="{% url 'download_multiple_files' %}">
-            {% csrf_token %}
-            <input type="hidden" name="public_link" value="{{ public_link }}">
-            <ul>
+        <form method="get">
+            <label for="file_type">Фильтр по типу:</label>
+            <select name="file_type" id="file_type" onchange="this.form.submit()">
+                <option value="">Все</option>
+                <option value="image" {% if file_type == 'image' %}selected{% endif %}>Изображения</option>
+                <option value="video" {% if file_type == 'video' %}selected{% endif %}>Видео</option>
+                <option value="document" {% if file_type == 'document' %}selected{% endif %}>Документы</option>
+            </select>
+        </form>
+        <ul>
             {% for file in files %}
                 <li>
-                    {% if file.type == 'file' %}
-                        <input type="checkbox" name="files" value="{{ file.path }}">
-                    {% endif %}
                     {{ file.name }}
+                    <a href="{% url 'yandex_disk:download_file' public_link=public_link file_path=file.path %}">Скачать</a>
                 </li>
             {% endfor %}
-            </ul>
-            <button type="submit">Скачать выбранные файлы</button>
-        </form>
+        </ul>
     {% endif %}
-</body>
-</html>
+    <a href="{% url 'yandex_disk:index' %}">Вернуться</a>
+{% endblock %}

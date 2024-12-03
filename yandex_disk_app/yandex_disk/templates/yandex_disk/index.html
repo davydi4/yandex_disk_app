@@ -1,14 +1,12 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Яндекс.Диск</title>
-</head>
-<body>
-    <h1>Введите публичную ссылку</h1>
+{% extends "yandex_disk/base.html" %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+    <h2>Введите публичную ссылку</h2>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Показать файлы</button>
+        <input type="text" name="public_link" placeholder="Введите публичную ссылку" required>
+        <button type="submit">Отправить</button>
     </form>
-</body>
-</html>
+{% endblock %}

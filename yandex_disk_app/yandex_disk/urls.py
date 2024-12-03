@@ -1,9 +1,10 @@
 from django.urls import path
 from . import views
 
+app_name = 'yandex_disk'
+
 urlpatterns = [
     path('', views.index, name='index'),
-    path('files/', views.file_list, name='file_list'),
-    path('download/<path:file_path>/', views.download_file, name='download_file'),
-    path('download-multiple/', views.download_multiple_files, name='download_multiple_files'),
+    path('files/<path:public_link>/', views.file_list, name='file_list'),
+    path('files/<path:public_link>/download/<path:file_path>/', views.download_file, name='download_file'),
 ]
