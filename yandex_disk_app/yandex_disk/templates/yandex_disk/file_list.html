@@ -1,8 +1,0 @@
-{% for file in files %}
-    <div>
-        <p>{{ file.name }}</p>
-        <a href="{% url 'yandex_disk:download_file' public_link=public_link file_path=file.path %}">
-            Скачать файл
-        </a>
-    </div>
-{% endfor %}

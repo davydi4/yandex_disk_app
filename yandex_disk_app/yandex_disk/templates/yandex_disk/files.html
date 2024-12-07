@@ -19,7 +19,7 @@
         <ul>
             {% for file in files %}
                 <li>
-                    {{ file.name }}
+                    {{file.name}}
                     <a href="{% url 'yandex_disk:download_file' public_link=public_link file_path=file.path %}">Скачать</a>
                 </li>
             {% endfor %}
