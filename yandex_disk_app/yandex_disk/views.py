@@ -1,18 +1,9 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from django.http import HttpResponse
 from django.core.cache import cache
 import requests
 
 API_BASE_URL = "https://cloud-api.yandex.net/v1/disk/public/resources"
-
-with open('oauth_token.txt', 'r') as f:
-    oauth = f.read()
-
-headers = {
-    "Authorization": f"OAuth {oauth}",
-    "Accept": "application/json"
-}
 
 
 def index(request):
@@ -51,25 +42,3 @@ def file_list(request, public_link):
 
     return render(request, 'yandex_disk/files.html',
                   {'files': files, 'public_link': public_link, 'file_type': file_type})
-
-
-def download_file(request, public_link, file_path):
-    """
-    Функция для скачивания конкретного файла по его пути.
-    """
-    global headers
-
-    # Отправка GET-запроса для получения ссылки на скачивание
-    res = requests.get(API_BASE_URL, params={"public_key": public_link, 'path': file_path, "headers": headers})
-    download_url = f"{API_BASE_URL}/download"
-    params = {'public_key': public_link, 'path': file_path}
-    response = requests.get(download_url, params=params)
-    if response.status_code == 200:
-        download_link = response.json()['href']
-        file_content = requests.get(download_link).content
-        file_name = file_path.split('/')[-1]
-        response = HttpResponse(file_content, content_type='application/octet-stream')
-        response['Content-Disposition'] = f'attachment; filename="{file_name}"'
-        return response
-    else:
-        return HttpResponse('Ошибка при скачивании файла', status=500)
