@@ -1,29 +1,66 @@
 {% extends "yandex_disk/base.html" %}
+<!--
+    Заголовок страницы.
+    Переопределяет блок `title` из базового шаблона `base.html`.
+    Отображается как "Список файлов".
+    -->
+{% block title %}
 
-{% block title %}Список файлов{% endblock %}
+    Список файлов
+{% endblock %}
 
 {% block content %}
+    <!-- Основной контент страницы -->
     <h2>Список файлов</h2>
+
     {% if error %}
+        <!--
+        Если переменная `error` передана в контекст, отображаем её.
+        Обычно содержит сообщение об ошибке, например, если запрос к API не удался.
+        -->
         <p style="color: red;">{{ error }}</p>
     {% else %}
+        <!--
+        Если ошибки нет, отображаем фильтр по типу файлов и список файлов.
+        -->
+
+        <!-- Форма для фильтрации списка файлов -->
         <form method="get">
             <label for="file_type">Фильтр по типу:</label>
             <select name="file_type" id="file_type" onchange="this.form.submit()">
                 <option value="">Все</option>
-                <option value="image" {% if file_type == 'image' %}selected{% endif %}>Изображения</option>
-                <option value="video" {% if file_type == 'video' %}selected{% endif %}>Видео</option>
-                <option value="document" {% if file_type == 'document' %}selected{% endif %}>Документы</option>
+                <!-- Опция "Изображения" -->
+                <option value="image" {% if file_type == 'image' %}selected{% endif %}>
+                    Изображения
+                </option>
+                <!-- Опция "Видео" -->
+                <option value="video" {% if file_type == 'video' %}selected{% endif %}>
+                    Видео
+                </option>
+                <!-- Опция "Документы" -->
+                <option value="document" {% if file_type == 'document' %}selected{% endif %}>
+                    Документы
+                </option>
             </select>
         </form>
+
+        <!--
+        Список файлов.
+        Переменная `files` должна быть списком объектов, каждый из которых
+        содержит поля `name` (имя файла) и `file` (ссылка на скачивание).
+        -->
         <ul>
             {% for file in files %}
                 <li>
-                    {{file.name}}
-                    <a href="{{file.file}}">Скачать</a>
+                    <!-- Имя файла -->
+                    {{ file.name }}
+                    <!-- Ссылка на скачивание -->
+                    <a href="{{ file.file }}">Скачать</a>
                 </li>
             {% endfor %}
         </ul>
     {% endif %}
+
+    <!-- Ссылка для возврата на главную страницу -->
     <a href="{% url 'yandex_disk:index' %}">Вернуться</a>
 {% endblock %}
